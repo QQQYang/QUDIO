@@ -113,25 +113,25 @@ def circuit(param, hamiltonian, p=0, M=100):
     1. Eigenvalues of tensor product of matrices equal the product of eigenvalues of each matrix
     2. Orthogonality: if eigenvectors of each matric are orthogonal, then the eigenvectors of tensor product of matrics are orthogonal too.
     """
-    # exp = 0
-    # for h in hamiltonian:
-    #     coef = hamiltonian[h]
-    #     x = PauliGate[h[0]]
-    #     for i in range(1, len(h)):
-    #         x = kronecker(x, PauliGate[h[i]])
-    #     exp += coef*(torch.conj(state).t() @ x @ state)[0,0].real
-    # return exp
-    # n_shots = 100
-
     exp = 0
     for h in hamiltonian:
-        ## 1. calculate the probability under the computational basis of observables
-        rotated_prob = hamiltonian[h][0] @ state    # [2**n, 1]
-        rotated_prob = torch.abs(rotated_prob[:, 0])**2
-        ## 2. sampling
-        index = sample_basis_states(M, 2**n_qubits, rotated_prob[:,0])
-        exp += hamiltonian[h][2] * torch.mean(hamiltonian[h][1][index])
+        coef = hamiltonian[h]
+        x = PauliGate[h[0]]
+        for i in range(1, len(h)):
+            x = kronecker(x, PauliGate[h[i]])
+        exp += coef*(torch.conj(state).t() @ x @ state)[0,0].real
     return exp
+    # n_shots = 100
+
+    # exp = 0
+    # for h in hamiltonian:
+    #     ## 1. calculate the probability under the computational basis of observables
+    #     rotated_prob = hamiltonian[h][0] @ state    # [2**n, 1]
+    #     rotated_prob = torch.abs(rotated_prob[:, 0])**2
+    #     ## 2. sampling
+    #     index = sample_basis_states(M, 2**n_qubits, rotated_prob[:,0])
+    #     exp += hamiltonian[h][2] * torch.mean(hamiltonian[h][1][index])
+    # return exp
 
 class CircuitFn(Function):
     """
