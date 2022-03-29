@@ -56,7 +56,7 @@ for i, h in enumerate(xticks):
         accs = np.mean(accs)
         data.append(bases*base_accs/(ts*accs))
         if worker == 32:
-            print('h={}, Q=32, t={}'.format(h, ts*accs/100))
+            print('h={}, Q=32, t={}, bases={}'.format(h, ts*accs/100, bases))
         if h == 32 and worker == 4:
             ax.text(worker-0.5, data[-1]+1, str(round(data[-1], 3)), fontsize=20, bbox=dict(boxstyle='square,pad=0.3', ec='black'))
     # ax[0].plot(xticks, data, label='K={}'.format(h), color=color[i], marker=marker[i])
@@ -98,7 +98,7 @@ for i, h in enumerate(xticks):
         accs = np.mean(accs)
         data.append(bases*base_accs/(ts*accs))
         if worker == 32:
-            print('h={}, Q=32, t={}'.format(h, ts*accs/100))
+            print('h={}, Q=32, t={}, bases={}'.format(h, ts*accs/100, bases))
     ax.plot(xticks, data, '--', label='W={} (I)'.format(h), color=np.array(color[i])/255, marker=marker[i], linewidth=2.0)
 
 ax.tick_params(labelsize=20)

@@ -131,7 +131,7 @@ ax[2].set_ylabel('Grad L2 norm', fontsize=20)
 ax[2].legend(loc='best', fontsize=15)
 ax[2].grid(True)
 plt.tight_layout()
-plt.savefig('figure/qnn.pdf')
+# plt.savefig('figure/qnn.pdf')
 
 # fig.legend(loc='best')
 plt.show()

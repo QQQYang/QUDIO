@@ -11,7 +11,7 @@ marker_grad = ["v", "^", "<", ">"]
 params={'font.family':'serif',
         'font.serif':'Times New Roman',
         'font.style':'normal',
-        'font.weight':'bold', #or 'bold'
+        'font.weight':'bold', #or 'blod'
         }
 from matplotlib import rcParams
 rcParams.update(params)
@@ -29,24 +29,24 @@ save = True
 
 x = range(100)
 worker = 32
-acc = []
+data = []
+data_vanilla = []
 for i, h in enumerate(xticks):
     for j, w in enumerate([1, 2, 4, 8, 16]):
-        data = []
-        name = 'acc_test_'+str(w)+'_'+str(h)+'_0.0001_100.npy'
         for seed in range(5):
-            data.append(np.load(os.path.join('logs/basis00/e200_'+str(seed), name))[-1])
-        acc.append(data)
-        if w == 4:
-            box = ax.boxplot(data, positions=[(i+1)*2+j*0.3], labels=[str(h)], patch_artist=True, widths=0.3, boxprops=dict(facecolor=color[j], linewidth=2), medianprops=dict(color='k', linewidth=2), flierprops=dict(markerfacecolor=color[j], marker='D'), capprops=dict(linewidth=2), whiskerprops=dict(linewidth=2))
-        else:
-            box = ax.boxplot(data, positions=[(i+1)*2+j*0.3], labels=[''], patch_artist=True, widths=0.3, boxprops=dict(facecolor=color[j], linewidth=2), medianprops=dict(color='k', linewidth=2), flierprops=dict(markerfacecolor=color[j], marker='D', linewidth=2), capprops=dict(linewidth=2), whiskerprops=dict(linewidth=2))
-        if save:
-            boxes.append(box['boxes'][0])
-            boxes_label.append('Q={}'.format(w))
+            name = 'acc_test_'+str(w)+'_'+str(h)+'_0.0001_100_{}.npy'.format(seed)
+            if not os.path.exists(os.path.join('logs/qnn_fix_batch_weighted/', name)):
+                print(os.path.join('logs/qnn_fix_batch_weighted', name))
+            else:
+                data.append(np.load(os.path.join('logs/qnn_fix_batch_weighted/', name))[-1])
+
+            name = 'acc_test_'+str(w)+'_'+str(h)+'_0.0001_100.npy'
+            data_vanilla.append(np.load(os.path.join('logs/basis00/e200_'+str(seed), name))[-1])
     # ax.plot(x, data, label='W={}'.format(h), color=color[i], marker=marker[i])
     ax.tick_params(labelsize=20)
-    save = False
+
+ax.hist(data, bins=100, density=True, color=color[0], cumulative=True, histtype='step', label='WS-QUDIO', linewidth=2.5)
+ax.hist(data_vanilla, bins=100, density=True, color=color[1], cumulative=True, histtype='step', label='QUDIO', linewidth=2.5)
 
 # bplot = ax.boxplot(acc, labels=[str(h) for h in xticks], patch_artist=True)
 # for i,patch in enumerate(bplot['boxes']):
@@ -57,11 +57,12 @@ font = {
     'style':'normal',
     'weight':'bold', #or 'bold'
 }
-ax.set_ylabel('Test accuracy', font, fontsize=20)
-ax.set_xlabel('Number of local iterations (W)', font, fontsize=20)
-leg = ax.legend(boxes, boxes_label, fontsize=20, loc='upper left')
+ax.set_ylabel('Probability', font, fontsize=20)
+ax.set_xlabel('Test accuracy', font, fontsize=20)
+leg = ax.legend(fontsize=20, loc='upper left')
 leg.get_frame().set_linewidth(2)
-leg.get_frame().set_edgecolor('k') 
+leg.get_frame().set_edgecolor('k')
+
 ax.grid(True)
 ax.spines['bottom'].set_linewidth(2)
 ax.spines['left'].set_linewidth(2)
@@ -69,5 +70,5 @@ ax.spines['right'].set_linewidth(2)
 ax.spines['top'].set_linewidth(2)
 plt.tight_layout()
 # plt.savefig('figure/acc.pdf')
-# plt.savefig('figure/acc.png')
+# plt.savefig('figure/acc_cdf.pdf')
 plt.show()

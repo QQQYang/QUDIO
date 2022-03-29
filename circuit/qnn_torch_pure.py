@@ -45,21 +45,23 @@ def classifier(param, feat, p=0, M=100):
             x = kronecker(x, Rot(param[i, j, 0], param[i, j, 1], param[i, j, 2]))
         state = CNOT_layer(n_qubits).to(feat.device) @ (x @ state)
 
-    # noiseless expectations
-    # exp = torch.conj(state[:2]).t() @ Z @ state[:2]
-    # return exp[0, 0].real
+    if p<=0 and M<=0:
+        # noiseless expectations
+        return sum(state[0:len(state):2,0].abs()**2)
+        # exp = torch.conj(state[:2]).t() @ Z @ state[:2]
+        # return exp[0, 0].real
+    else:
+        # noisy expectations
+        prob = sum(state[0:len(state):2,0].abs()**2)
+        #sample = torch.rand(n_shots)
+        #exp = (2*sum(sample<=prob) - n_shots) / n_shots
 
-    #n_shots = 100
-    prob = sum(state[0:len(state):2,0].abs()**2)
-    #sample = torch.rand(n_shots)
-    #exp = (2*sum(sample<=prob) - n_shots) / n_shots
+        # sample = torch.rand(1000)
+        # exp = torch.mean(torch.tanh(prob - sample))
 
-    # sample = torch.rand(1000)
-    # exp = torch.mean(torch.tanh(prob - sample))
-
-    m = bernoulli.Bernoulli((1-p)**20*prob+(1-(1-p)**20)/(2**1))
-    exp = torch.mean(m.sample((M,)))
-    return exp
+        m = bernoulli.Bernoulli((1-p)**20*prob+(1-(1-p)**20)/(2**1))
+        exp = torch.mean(m.sample((M,)))
+        return exp
 
 class CircuitFn(Function):
     @staticmethod

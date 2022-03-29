@@ -11,7 +11,7 @@ marker_grad = ["v", "^", "<", ">"]
 params={'font.family':'serif',
         'font.serif':'Times New Roman',
         'font.style':'normal',
-        'font.weight':'bold', #or 'bold'
+        'font.weight':'bold', #or 'blod'
         }
 from matplotlib import rcParams
 rcParams.update(params)
@@ -33,14 +33,18 @@ acc = []
 for i, h in enumerate(xticks):
     for j, w in enumerate([1, 2, 4, 8, 16]):
         data = []
-        name = 'acc_test_'+str(w)+'_'+str(h)+'_0.0001_100.npy'
         for seed in range(5):
-            data.append(np.load(os.path.join('logs/basis00/e200_'+str(seed), name))[-1])
+            name = 'acc_test_'+str(w)+'_'+str(h)+'_0.0001_100_{}.npy'.format(seed)
+            if not os.path.exists(os.path.join('logs/qnn_fix_batch_weighted/', name)):
+                print(os.path.join('logs/qnn_fix_batch_weighted', name))
+            else:
+                data.append(np.load(os.path.join('logs/qnn_fix_batch_weighted/', name))[-1])
         acc.append(data)
+        
         if w == 4:
-            box = ax.boxplot(data, positions=[(i+1)*2+j*0.3], labels=[str(h)], patch_artist=True, widths=0.3, boxprops=dict(facecolor=color[j], linewidth=2), medianprops=dict(color='k', linewidth=2), flierprops=dict(markerfacecolor=color[j], marker='D'), capprops=dict(linewidth=2), whiskerprops=dict(linewidth=2))
+            box = ax.boxplot(data, positions=[(i+1)*2+j*0.3], labels=[str(h)], patch_artist=True, widths=0.3, boxprops=dict(facecolor=color[j], linewidth=2), medianprops=dict(color='k', linewidth=2), flierprops=dict(markerfacecolor=color[j], marker='D', linewidth=2), whiskerprops=dict(linewidth=2))
         else:
-            box = ax.boxplot(data, positions=[(i+1)*2+j*0.3], labels=[''], patch_artist=True, widths=0.3, boxprops=dict(facecolor=color[j], linewidth=2), medianprops=dict(color='k', linewidth=2), flierprops=dict(markerfacecolor=color[j], marker='D', linewidth=2), capprops=dict(linewidth=2), whiskerprops=dict(linewidth=2))
+            box = ax.boxplot(data, positions=[(i+1)*2+j*0.3], labels=[''], patch_artist=True, widths=0.3, boxprops=dict(facecolor=color[j], linewidth=2), medianprops=dict(color='k', linewidth=2), flierprops=dict(markerfacecolor=color[j], marker='D', linewidth=2), whiskerprops=dict(linewidth=2))
         if save:
             boxes.append(box['boxes'][0])
             boxes_label.append('Q={}'.format(w))
@@ -59,9 +63,10 @@ font = {
 }
 ax.set_ylabel('Test accuracy', font, fontsize=20)
 ax.set_xlabel('Number of local iterations (W)', font, fontsize=20)
-leg = ax.legend(boxes, boxes_label, fontsize=20, loc='upper left')
+leg = ax.legend(boxes, boxes_label, fontsize=20, loc='best')
 leg.get_frame().set_linewidth(2)
-leg.get_frame().set_edgecolor('k') 
+leg.get_frame().set_edgecolor('k')
+
 ax.grid(True)
 ax.spines['bottom'].set_linewidth(2)
 ax.spines['left'].set_linewidth(2)
@@ -69,5 +74,5 @@ ax.spines['right'].set_linewidth(2)
 ax.spines['top'].set_linewidth(2)
 plt.tight_layout()
 # plt.savefig('figure/acc.pdf')
-# plt.savefig('figure/acc.png')
+plt.savefig('figure/acc_weighted.pdf')
 plt.show()

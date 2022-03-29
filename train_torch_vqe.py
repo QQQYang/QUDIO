@@ -27,7 +27,7 @@ def get_opt():
     parser.add_argument("--M", type=int, default=100)
     parser.add_argument("--port", type=int, default=0)
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--mol", type=str, default='LiH')
+    parser.add_argument("--mol", type=str, default='h2')
     opt = parser.parse_args()
     return opt
 
@@ -88,7 +88,7 @@ def train(model, local_iter=8, p=0.1, M=100, distance=0.3, seed=0, h={}, world_s
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 80, gamma=0.5, last_epoch=-1)
 
     loss_list = []
-    rank = dist.get_rank()
+    # rank = dist.get_rank()
     for i in range(200):
         #np.random.shuffle(h)
         #data_len = len(h) // world_size + (len(h) % world_size != 0)
@@ -130,7 +130,7 @@ def train(model, local_iter=8, p=0.1, M=100, distance=0.3, seed=0, h={}, world_s
 
 def parallel_train(rank, world_size, K, p, M, distance=0.3, seed=0, mol='LiH'):
     h = ''
-    with open('VQE/data/'+mol+str(distance)+'.json', 'r') as f:
+    with open('data/'+mol+str(distance)+'.json', 'r') as f:
         h = json.load(f)
     h = list(h.items())
     # temporal for test
@@ -150,7 +150,7 @@ def parallel_train(rank, world_size, K, p, M, distance=0.3, seed=0, mol='LiH'):
         model = VQE(n_qubits, h_part, p=p, M=M, param_shift=False)
     else:
         model = VQE_HE(n_qubits, h_part, p=p, M=M, param_shift=False)
-    average_weights(model)
+    # average_weights(model)
 
     # parallel wrapper
     if torch.cuda.device_count() > 0:
@@ -169,20 +169,21 @@ def init_process(rank, size, K, port, p, M, distance, seed, mol, fn, backend='gl
 
 if __name__ == '__main__':
     opt = get_opt()
-    mp.set_start_method("spawn")
-    cost = []
-    for distance in [0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 1.7, 1.9, 2.1]:
-        for world_size in tqdm([opt.W], desc='world_size'):
-            #world_size = 2#mp.cpu_count()
+    parallel_train(0, 1, 2, 0.01, 100, mol=opt.mol)
+    # mp.set_start_method("spawn")
+    # cost = []
+    # for distance in [0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 1.7, 1.9, 2.1]:
+    #     for world_size in tqdm([opt.W], desc='world_size'):
+    #         #world_size = 2#mp.cpu_count()
 
-            processes = []
-            st = time.time()
-            for rank in range(world_size):
-                p = mp.Process(target=init_process, args=(rank, world_size, opt.K, opt.port+29500, opt.p, opt.M, distance, opt.seed, opt.mol, parallel_train))
-                p.start()
-                processes.append(p)
-            for p in processes:
-                p.join()
-            cost.append(time.time() - st)
-    np.save('logs/vqe/ideal/'+opt.mol+'/baseline/'+str(opt.seed)+'/time'+str(opt.W)+'_'+str(opt.K)+'_'+str(opt.p)+'_'+str(opt.M), cost)
+    #         processes = []
+    #         st = time.time()
+    #         for rank in range(world_size):
+    #             p = mp.Process(target=init_process, args=(rank, world_size, opt.K, opt.port+29500, opt.p, opt.M, distance, opt.seed, opt.mol, parallel_train))
+    #             p.start()
+    #             processes.append(p)
+    #         for p in processes:
+    #             p.join()
+    #         cost.append(time.time() - st)
+    # np.save('logs/vqe/ideal/'+opt.mol+'/baseline/'+str(opt.seed)+'/time'+str(opt.W)+'_'+str(opt.K)+'_'+str(opt.p)+'_'+str(opt.M), cost)
 
